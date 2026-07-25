@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.env
+*.db
+saved_models/*.pth
+gradcam_outputs/*
+data/
+.venv/
+venv/
+.DS_Store
+*.log

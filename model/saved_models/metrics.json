@@ -1,0 +1,20 @@
+{
+  "accuracy": 0.8541666666666666,
+  "precision": 0.8108108108108109,
+  "recall": 1.0,
+  "f1": 0.8955223880597015,
+  "confusion_matrix": [
+    [
+      143,
+      91
+    ],
+    [
+      0,
+      390
+    ]
+  ],
+  "class_names": [
+    "NORMAL",
+    "PNEUMONIA"
+  ]
+}

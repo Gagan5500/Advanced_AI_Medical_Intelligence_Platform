@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: medical_ai_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.0-flash}
+      - DATABASE_URL=sqlite:////app/data/predictions.db
+      - MODEL_PATH=/app/saved_models/pneumonia_resnet18.pth
+      - GRADCAM_DIR=/app/gradcam_outputs
+      - PUBLIC_BACKEND_URL=http://localhost:8000
+    volumes:
+      - ./saved_models:/app/saved_models
+      - ./gradcam_outputs:/app/gradcam_outputs
+      - ./db_data:/app/data
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: medical_ai_frontend
+    ports:
+      - "8502:8501"
+    environment:
+      - BACKEND_URL=http://backend:8000
+    depends_on:
+      - backend
+    restart: unless-stopped
