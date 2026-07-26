@@ -1,19 +1,20 @@
 """
 llm_report.py
 
-Uses Google's Gemini API (google-genai SDK) to turn a raw model prediction
-into a readable, structured, patient/clinician-friendly draft report.
+Uses Groq's API (fast, free-tier friendly, no billing verification required)
+to turn a raw model prediction into a readable, structured, patient/clinician
+-friendly draft report.
 
 IMPORTANT: this is an AI-generated *draft* to assist a radiologist/clinician
 -- it is NOT a diagnosis and every report explicitly says so. Set your key
-via the GEMINI_API_KEY environment variable (see .env.example).
+via the GROQ_API_KEY environment variable (see .env.example).
 """
 
-from google import genai
+from groq import Groq
 
-from config import GEMINI_API_KEY, GEMINI_MODEL
+from config import GROQ_API_KEY, GROQ_MODEL
 
-_client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
+_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 
 REPORT_PROMPT = """You are assisting a radiologist by drafting a preliminary,
 plain-language explanation of an AI model's chest X-ray screening output.
@@ -40,7 +41,7 @@ Keep it under 200 words total, clear and professional.
 def generate_report(predicted_class: str, confidence: float) -> str:
     if _client is None:
         return (
-            "[LLM report unavailable: GEMINI_API_KEY not set]\n\n"
+            "[LLM report unavailable: GROQ_API_KEY not set]\n\n"
             f"Model predicted: {predicted_class} (confidence {confidence:.1%}).\n"
             "This is an AI-assisted screening result only, not a medical diagnosis. "
             "Please consult a licensed radiologist/physician for confirmation."
@@ -49,11 +50,11 @@ def generate_report(predicted_class: str, confidence: float) -> str:
     prompt = REPORT_PROMPT.format(predicted_class=predicted_class, confidence=confidence)
 
     try:
-        response = _client.models.generate_content(
-            model=GEMINI_MODEL,
-            contents=prompt,
+        response = _client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=[{"role": "user", "content": prompt}],
         )
-        return response.text
+        return response.choices[0].message.content
     except Exception as e:  # noqa: BLE001
         return (
             f"[LLM report generation failed: {e}]\n\n"
